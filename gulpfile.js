@@ -12,10 +12,10 @@ var gulp           = require('gulp'),
 		autoprefixer   = require('gulp-autoprefixer'),
 		ftp            = require('vinyl-ftp'),
 		notify         = require("gulp-notify"),
-		rsync          = require('gulp-rsync');
+		rsync          = require('gulp-rsync'),
+		spritesmith    = require('gulp.spritesmith');
 
-// Скрипты проекта
-
+// Работа с JS
 gulp.task('common-js', function() {
 	return gulp.src([
 		'app/js/common.js',
@@ -47,6 +47,7 @@ gulp.task('browser-sync', function() {
 	});
 });
 
+// Работа с SASS
 gulp.task('sass', function() {
 	return gulp.src('app/sass/**/*.sass')
 	.pipe(sass({outputStyle: 'expand'}).on("error", notify.onError()))
@@ -57,18 +58,34 @@ gulp.task('sass', function() {
 	.pipe(browserSync.reload({stream: true}));
 });
 
-gulp.task('watch', ['sass', 'js', 'browser-sync'], function() {
+// Спрайты
+gulp.task('sprite', function () {
+  var spriteData = gulp.src('app/img/sprites/*.png').pipe(spritesmith({
+    imgName: 'sprite.png',
+		cssName: '_sprite.sass',
+		padding: 5,
+		cssFormat: 'sass',
+		algorithm: 'binary-tree',
+	}));
+  spriteData.img.pipe(gulp.dest('app/img/')); // путь, куда сохраняем картинку
+  spriteData.css.pipe(gulp.dest('app/sass/')); // путь, куда сохраняем стили
+});
+
+// Слежение
+gulp.task('watch', ['sass', 'js', 'sprite', 'browser-sync'], function() {
 	gulp.watch('app/sass/**/*.sass', ['sass']);
 	gulp.watch(['libs/**/*.js', 'app/js/common.js'], ['js']);
 	gulp.watch('app/*.html', browserSync.reload);
 });
 
+// Сжатие изображений
 gulp.task('imagemin', function() {
 	return gulp.src('app/img/**/*')
 	.pipe(cache(imagemin()))
 	.pipe(gulp.dest('dist/img')); 
 });
 
+// Сборка проекта
 gulp.task('build', ['removedist', 'imagemin', 'sass', 'js'], function() {
 
 	var buildFiles = gulp.src([
@@ -90,6 +107,7 @@ gulp.task('build', ['removedist', 'imagemin', 'sass', 'js'], function() {
 
 });
 
+// Отправка на сервер
 gulp.task('deploy', function() {
 
 	var conn = ftp.create({
@@ -121,6 +139,7 @@ gulp.task('rsync', function() {
 	}));
 });
 
+// Очистка папки сборки
 gulp.task('removedist', function() { return del.sync('dist'); });
 gulp.task('clearcache', function () { return cache.clearAll(); });
 
