@@ -66,6 +66,7 @@ gulp.task('sprite', function () {
 		padding: 5,
 		cssFormat: 'sass',
 		algorithm: 'binary-tree',
+		imgPath: '../img/sprite.png',
 	}));
   spriteData.img.pipe(gulp.dest('app/img/')); // путь, куда сохраняем картинку
   spriteData.css.pipe(gulp.dest('app/sass/')); // путь, куда сохраняем стили
