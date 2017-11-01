@@ -21,7 +21,7 @@ gulp.task('common-js', function() {
 		'app/js/common.js',
 		])
 	.pipe(concat('common.min.js'))
-	.pipe(uglify())
+	.pipe(uglify({compress: false}).on("error", gutil.log)) //log notify.onError()
 	.pipe(gulp.dest('app/js'));
 });
 
